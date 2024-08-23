@@ -1,9 +1,17 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Onboarding from "./pages/Onboarding";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
-    <div className="App">
-      home page
-    </div>
+    <BrowserRouter>
+    <Routes>
+      <Route path="/" element = {<Home/> }/>
+      <Route path="/onboarding" element = {<Onboarding/>}/>
+      <Route path="/dashboard" element = {<Dashboard/>}/>
+    </Routes>
+    </BrowserRouter>
   );
 }
 
