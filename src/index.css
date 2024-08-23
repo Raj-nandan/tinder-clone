@@ -1,13 +1,83 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import url('https://fonts.googleapis.com/css2?family=Gupter:wght@400;500;700&display=swap');
+html, body{
+    margin: 0;
+    padding: 0;
+    text-align: center;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+*{
+    font-family: "Gupter", serif;
+}
+
+.primary-btn{
+    color: rgb(158, 25, 25);
+    text-transform: uppercase;
+    font-size: 30px;
+    background: linear-gradient(45deg, rgb(254, 48, 114), rgb(225, 89, 64));
+    padding: 12px, 30px;
+    border-radius: 20px;
+    border: none;
+}
+
+.primary-btn:hover{
+    background: linear-gradient(260deg,  rgb(254, 48, 114), rgb(225, 89, 64));
+}
+
+
+
+/* -----nav--- */
+nav{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+nav .logo-container{
+    width: 170px;
+    margin: 15px;
+}
+
+nav  .logo-container .logo{
+    width: 100%;
+}
+
+nav .nav-btn{
+    color: rgb(254, 48, 114);
+    background-color: rgb(255, 255, 255);
+    font-size: 20px;
+    height: 50px;
+    margin: 45px 20px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+}
+
+nav .nav-btn:disabled{
+    color: rgb(197, 29, 82);
+    background-color: rgb(171, 161, 161);
+}
+
+/* ----home--- */
+
+.overlay{
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.65) 0%,
+        rgba(0, 0, 0, 0) 100%
+    ), url(images/bg_img.jpg);
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    background-position: center;
+}
+
+.primary-title{
+    font-size: 70px;
+    color: rgb(225, 225, 225);
+}
+
+.home{
+    margin-top: 30vh;
 }
