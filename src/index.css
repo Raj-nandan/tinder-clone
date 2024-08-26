@@ -217,11 +217,11 @@ nav .nav-btn:disabled{
 
 .dashboard{
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
 }
 
 .swipe-container{
-    width: 70%;
+    width: 60%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -244,7 +244,7 @@ nav .nav-btn:disabled{
     background-color: #fff;
     width: 300px;
     height: 400px;
-    /* box-shadow: 0px 0px 60px 0px rgba(0,0,0,0.30); */
+    box-shadow: 0px 0px 60px 0px rgba(0,0,0,0.30);
     border-radius: 30px;
     background-size: cover;
     background-position: center;
@@ -263,3 +263,81 @@ nav .nav-btn:disabled{
     bottom: 0;
     margin: 15px;
   }
+
+
+  /* -------chatContainer------------ */
+
+  .chat-container{
+    border-radius: 20px;
+    background-color: rgb(255, 255, 255);
+    box-shadow: rgba(182, 42, 42, 0.407) 0px 6px 24px 0px,
+    rgba(0, 0, 0, 0.08) 5px 4px 0px 1px;
+    width: 30%;
+    margin-top: 20px;
+    margin-left: auto;
+    text-align: left;
+    z-index: 1;
+    
+  }
+
+  .chat-container .chat-container-header{
+    border-radius: 20px;
+    background: linear-gradient(45deg, rgb(254, 48, 114), rgb(255, 89, 64));
+    height: 100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .chat-container .option{
+    border: none;
+    background-color: rgb(255, 255, 255);
+    border-bottom:  solid 3px rgb(255, 11, 11);
+    margin: 2px;
+    font-size: 20px;
+    padding: 10px;
+  }
+
+  .chat-container .option:disabled{
+    border-bottom:  solid 3px rgb(86, 84, 84);
+  }
+
+  .chat-container .profile,
+  .chat-container .log-out-icon{
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    color: rgb(255, 255, 255);
+  }
+
+  .img-container{
+    height: 30px;
+    width: 30px;
+    border-radius: 15px;
+    margin: 10px;
+    overflow: hidden;
+  }
+  .img-container img{
+    width: 100%;
+  }
+
+/* ---------chat-display--------- */
+
+.chat-display{
+    padding: 20px;
+    height: 45vh;
+    overflow-y: auto;
+}
+
+.chat-input{
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    
+}
+
+.chat-input textarea{
+    min-width: 70%;
+    min-height: 50px;
+    max-height: 50px;
+}

@@ -5,7 +5,7 @@ import MatchesDisplay from './MatchesDisplay'
 
 const ChatContainer = () => {
   return (
-    <div>
+    <div className="chat-container">
       <ChatHeader/>
 
       <div>
