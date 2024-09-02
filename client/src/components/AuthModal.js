@@ -1,5 +1,7 @@
 import React from 'react'
 import { useState } from 'react'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 const AuthModal = ({ setShowModel, isSignup }) => {
 
@@ -8,19 +10,28 @@ const AuthModal = ({ setShowModel, isSignup }) => {
   const [confirmPassword, setConfirmPassword] = useState(null)
   const [error, setError] = useState(null)
 
+  let navigate = useNavigate()
+
   const handleClick = () => {
     setShowModel(false)
   }
 
-  const handleSubmit = (e) =>{
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    try{
-      if(isSignup && ( password !== confirmPassword)){
+    try {
+      if (isSignup && (password !== confirmPassword)) {
         setError("Password does not match")
+        return
       }
-      console.log("make a post req to database")
+
+      const response = await axios.post('http://localhost:8000/signup', { email, password })
+      const success = response.status === 201
+
+      if(success)
+        navigate('/onboarding')
+
     }
-    catch(error){
+    catch (error) {
       console.log(error)
     }
   }
@@ -33,36 +44,36 @@ const AuthModal = ({ setShowModel, isSignup }) => {
 
       <form onSubmit={handleSubmit}>
         <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="email"
-            required={true}
-            onChange={(e) =>setEmail(e.target.value)}
+          type="email"
+          id="email"
+          name="email"
+          placeholder="email"
+          required={true}
+          onChange={(e) => setEmail(e.target.value)}
         />
         <input
-            type="password"
-            id="password"
-            name="password"
-            placeholder="password"
-            required={true}
-            onChange={(e) =>setPassword(e.target.value)}
+          type="password"
+          id="password"
+          name="password"
+          placeholder="password"
+          required={true}
+          onChange={(e) => setPassword(e.target.value)}
         />
         {isSignup && <input
-            type="password"
-            id="password-check"
-            name="password-check"
-            placeholder="confirm Password"
-            required={true}
-            onChange={(e) =>setConfirmPassword(e.target.value)}
+          type="password"
+          id="password-check"
+          name="password-check"
+          placeholder="confirm Password"
+          required={true}
+          onChange={(e) => setConfirmPassword(e.target.value)}
         />}
 
-        <input className="submit-btn" type="submit"/>
-       <p>{error}</p>
+        <input className="submit-btn" type="submit" />
+        <p>{error}</p>
 
-        </form>
-        <hr/>
-        <h2>GET THE APP</h2>
+      </form>
+      <hr />
+      <h2>GET THE APP</h2>
 
     </div>
   )
