@@ -42,9 +42,9 @@ app.post('/signup', async (req, res) => {
             hashed_password: hashedPassword,
         }
 
-        await users.insertOne(data)
+        const insertedUser = await users.insertOne(data)
 
-        const token = jwt.sign(insertedUser, sanitizerEmail, {
+        const token = jwt.sign(insertedUser, sanitizedEmail, {
             expiresIn: 60*24,
         })
 
