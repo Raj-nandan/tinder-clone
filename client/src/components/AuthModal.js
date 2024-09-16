@@ -21,26 +21,29 @@ const AuthModal = ({ setShowModel, isSignup }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setError(null) // Reset error before each submission
     try {
       if (isSignup && (password !== confirmPassword)) {
-        setError("Password does not match")
+        setError("Passwords do not match")
         return
       }
 
-      const response = await axios.post('http://localhost:8000/signup', { email, password })
+      const response = await axios.post(`http://localhost:8000/${isSignup ? 'signup' : 'login'}`, { email, password })
 
       setCookie('email', response.data.email)
       setCookie('UserId', response.data.userId)
       setCookie('AuthToken', response.data.token)
 
       const success = response.status === 201
+      if (success && isSignup) navigate('/onboarding')
+      if (success && !isSignup) navigate('/dashboard')
 
-      if(success)
-        navigate('/onboarding')
-
-    }
-    catch (error) {
-      console.log(error)
+    } catch (error) {
+      if (error.response && error.response.data.error) {
+        setError(error.response.data.error)
+      } else {
+        setError("An error occurred. Please try again.")
+      }
     }
   }
 

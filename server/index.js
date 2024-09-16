@@ -1,4 +1,5 @@
 const PORT = 8000
+
 const express = require('express')
 const { MongoClient } = require('mongodb')
 const { v4: uuidv4 } = require('uuid')
@@ -16,6 +17,7 @@ app.use(express.json())
 app.get('/', (req, res) => {
     res.json('hello world')
 });
+
 app.post('/signup', async (req, res) => {
     const client = new MongoClient(uri)
     const { email, password } = req.body
@@ -31,7 +33,7 @@ app.post('/signup', async (req, res) => {
         const existingUser = await users.findOne({ email })
 
         if (existingUser) {
-            return res.status(409).send('User already exists')
+            return res.status(409).json({ error: 'User with this email already exists' })
         }
 
         const sanitizedEmail = email.toLowerCase()
@@ -57,6 +59,57 @@ app.post('/signup', async (req, res) => {
         await client.close()
     }
 })
+// app.post('/signup', async (req, res) => {
+//     const client = new MongoClient(uri);
+//     const { email, password } = req.body;
+
+//     // Input validation
+//     if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
+//         return res.status(400).json({ error: 'Invalid email or password' });
+//     }
+
+//     const sanitizedEmail = email.toLowerCase().trim();
+
+//     try {
+//         await client.connect();
+//         const database = client.db('tinder-data');
+//         const users = database.collection('users');
+
+//         const existingUser = await users.findOne({ email: sanitizedEmail });
+
+//         if (existingUser) {
+//             return res.status(409).json({ error: 'User already exists' });
+//         }
+
+//         const generatedUserId = uuidv4();
+//         const hashedPassword = await bcrypt.hash(password, 10);
+
+//         const newUser = {
+//             user_id: generatedUserId,
+//             email: sanitizedEmail,
+//             hashed_password: hashedPassword,
+//             created_at: new Date(),
+//         };
+
+//         await users.insertOne(newUser);
+
+//         const token = jwt.sign(
+//             { userId: generatedUserId, email: sanitizedEmail },
+//             process.env.JWT_SECRET,
+//             { expiresIn: '24h' }
+//         );
+
+//         res.status(201).json({ token, userId: generatedUserId, email: sanitizedEmail });
+
+//     } catch (err) {
+//         console.error('Signup error:', err);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//     } finally {
+//         await client.close();
+//     }
+// });
+
+
 
 app.get('/users', async (req, res) => {
     const client = new MongoClient(uri)
