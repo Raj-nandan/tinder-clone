@@ -9,6 +9,12 @@ const cors = require('cors')
 require('dotenv').config();
 const uri = process.env.MONGODB_URI;
 
+const multer = require('multer')
+const upload = multer({
+    dest: 'uploads/',
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+})
+
 
 const app = express()
 app.use(cors())
@@ -17,6 +23,8 @@ app.use(express.json())
 app.get('/', (req, res) => {
     res.json('hello world')
 })
+
+// ----------login user in-------------
 
 app.post('/login', async (req, res) => {
     const client = new MongoClient(uri)
@@ -48,6 +56,9 @@ app.post('/login', async (req, res) => {
         await client.close()
     }
 })
+
+
+// ----------signingup user -------------
 
 app.post('/signup', async (req, res) => {
     const client = new MongoClient(uri)
@@ -90,57 +101,8 @@ app.post('/signup', async (req, res) => {
         await client.close()
     }
 })
-// app.post('/signup', async (req, res) => {
-//     const client = new MongoClient(uri);
-//     const { email, password } = req.body;
 
-//     // Input validation
-//     if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
-//         return res.status(400).json({ error: 'Invalid email or password' });
-//     }
-
-//     const sanitizedEmail = email.toLowerCase().trim();
-
-//     try {
-//         await client.connect();
-//         const database = client.db('tinder-data');
-//         const users = database.collection('users');
-
-//         const existingUser = await users.findOne({ email: sanitizedEmail });
-
-//         if (existingUser) {
-//             return res.status(409).json({ error: 'User already exists' });
-//         }
-
-//         const generatedUserId = uuidv4();
-//         const hashedPassword = await bcrypt.hash(password, 10);
-
-//         const newUser = {
-//             user_id: generatedUserId,
-//             email: sanitizedEmail,
-//             hashed_password: hashedPassword,
-//             created_at: new Date(),
-//         };
-
-//         await users.insertOne(newUser);
-
-//         const token = jwt.sign(
-//             { userId: generatedUserId, email: sanitizedEmail },
-//             process.env.JWT_SECRET,
-//             { expiresIn: '24h' }
-//         );
-
-//         res.status(201).json({ token, userId: generatedUserId, email: sanitizedEmail });
-
-//     } catch (err) {
-//         console.error('Signup error:', err);
-//         res.status(500).json({ error: 'Internal Server Error' });
-//     } finally {
-//         await client.close();
-//     }
-// });
-
-
+// ----------get all users-------------
 
 app.get('/users', async (req, res) => {
     const client = new MongoClient(uri)
@@ -158,6 +120,65 @@ app.get('/users', async (req, res) => {
     } finally {
         await client.close()
     }
-});
+})
+
+
+// ----------update user detail and onboarding-------------
+
+app.put('/user', async (req, res) => {
+    const client = new MongoClient(uri)
+    const formData = req.body.formData
+    const userId = req.body.userId // Add this line
+
+    // console.log(formData)
+
+    try { 
+        await client.connect()
+        const database = client.db('tinder-data')
+        const users = database.collection('users')
+
+        const query = { user_id: userId }
+        const updateDocument = {
+            $set:{
+                first_name: formData.first_name,
+                dob_day: formData.dob_day,
+                dob_month: formData.dob_month,
+                dob_year: formData.dob_year,
+                show_gender: formData.show_gender,
+                gender_identity: formData.gender_identity,
+                gender_interest: formData.gender_interest,
+                url: req.file ? `/uploads/${req.file.filename}` : formData.url,
+                about: formData.about,
+                matches: formData.matches
+            },
+        }
+
+        const insertedUser = await users.updateOne(query, updateDocument)
+        
+        res.send(insertedUser)
+
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ error: 'Internal Server Error' })
+    } finally {
+        await client.close()
+    }
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.listen(PORT, () => console.log("server is running on port " + PORT))

@@ -1,11 +1,16 @@
 import React from 'react'
 import { useState } from 'react'
 import Nav from '../components/Nav'
+import { useCookies } from 'react-cookie'
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 const Onboarding = () => {
 
+  const [cookies, setCookie, removeCookie] = useCookies(null)
+
   const [formData, setFormData] = useState({
-    user_id: "",
+    user_id: cookies.UserId,
     first_name: "",
     dob_day: "",
     dob_month: "",
@@ -19,22 +24,55 @@ const Onboarding = () => {
     matches: []
   })
 
+  let navigate = useNavigate()
 
-
-  const handleSubmit = () => {
+  const handleSubmit = async(e) => {
     console.log("submitted");
+    e.preventDefault()
+
+    try {
+      const response = await axios.put('http://localhost:8000/user', { formData })
+      const success = response.status === 200
+      if (success) {
+        navigate('/dashboard')
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
+
+
   const handleChange = (e) => {
     console.log('e' + e)
-    const value =  e.target.type === "checkbox" ? e.target.checked : e.target.value
+    const value = e.target.type === "checkbox" ? e.target.checked : e.target.value
     const name = e.target.name
- 
+
     console.log('value ' + value, 'name ' + name)
 
     setFormData((prevState) => ({
       ...prevState,
       [name]: value
     }))
+  }
+
+  const handleUrlChange = (e) => {
+    const url = e.target.value;
+    setFormData(prevState => ({
+      ...prevState,
+      url: url,
+      file: null // Clear file when URL is entered
+    }))
+  }
+  
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prevState => ({
+        ...prevState,
+        file: file,
+        url: '' // Clear URL when file is selected
+      }))
+    }
   }
 
   console.log(formData)
@@ -176,21 +214,33 @@ const Onboarding = () => {
 
           </section>
 
-          <section>
-            <label htmlFor="url">Profile Picture</label>
+        
 
+          <section>
+            <label htmlFor="url">Profile Picture URL</label>
             <input
               type="url"
               name="url"
               id="url"
-              onChange={handleChange}
-              required={true}
+              onChange={handleUrlChange}
+              value={formData.url}
+              placeholder="Enter image URL"
+              disabled={!!formData.file}
             />
-
+            <label htmlFor="file-upload">Or upload an image:</label>
+            <input
+              type="file"
+              id="file-upload"
+              name="file"
+              onChange={handleFileChange}
+              accept="image/*"
+              style={{ border: 'none', outline: 'none' }}
+              disabled={!!formData.url}
+            />
             <div className="photo-container">
-            <img src={formData.url} alt="profile preview" />
+              {formData.url && <img src={formData.url} alt="profile preview" />}
+              {formData.file && <img src={URL.createObjectURL(formData.file)} alt="profile preview" />}
             </div>
-
           </section>
 
         </form>
