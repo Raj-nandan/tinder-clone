@@ -16,7 +16,38 @@ app.use(express.json())
 
 app.get('/', (req, res) => {
     res.json('hello world')
-});
+})
+
+app.post('/login', async (req, res) => {
+    const client = new MongoClient(uri)
+    const { email, password } = req.body
+
+    try {
+        await client.connect()
+        const database = client.db('tinder-data')
+        const users = database.collection('users')
+
+        const user = await users.findOne({ email })
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' })
+        }
+
+        const passwordMatch = await bcrypt.compare(password, user.hashed_password)
+
+        if (passwordMatch) {
+            const token = jwt.sign({ userId: user.user_id }, email, { expiresIn: '24h' })
+            res.status(201).json({ token, userId: user.user_id, email: user.email })
+        } else {
+            res.status(400).json({ error: 'Invalid credentials' })
+        }
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ error: 'Internal Server Error' })
+    } finally {
+        await client.close()
+    }
+})
 
 app.post('/signup', async (req, res) => {
     const client = new MongoClient(uri)
