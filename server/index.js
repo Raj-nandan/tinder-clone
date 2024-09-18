@@ -10,15 +10,27 @@ require('dotenv').config();
 const uri = process.env.MONGODB_URI;
 
 const multer = require('multer')
-const upload = multer({
-    dest: 'uploads/',
-    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+const path = require('path')
+
+// Set up multer for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, './uploads')
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname))
+    }
 })
 
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+})
 
 const app = express()
 app.use(cors())
 app.use(express.json())
+app.use('/uploads', express.static('uploads'))
 
 app.get('/', (req, res) => {
     res.json('hello world')
@@ -125,21 +137,58 @@ app.get('/users', async (req, res) => {
 
 // ----------update user detail and onboarding-------------
 
+// app.put('/user', async (req, res) => {
+//     const client = new MongoClient(uri)
+//     const formData = req.body.formData
+//     const userId = req.body.userId
+
+//     try { 
+//         await client.connect()
+//         const database = client.db('tinder-data')
+//         const users = database.collection('users')
+
+//         const query = { user_id: userId }
+//         const updateDocument = {
+//             $set:{
+//                 first_name: formData.first_name,
+//                 dob_day: formData.dob_day,
+//                 dob_month: formData.dob_month,
+//                 dob_year: formData.dob_year,
+//                 show_gender: formData.show_gender,
+//                 gender_identity: formData.gender_identity,
+//                 gender_interest: formData.gender_interest,
+//                 url: req.file ? `/uploads/${req.file.filename}` : formData.url,
+//                 about: formData.about,
+//                 matches: formData.matches
+//             },
+//         }
+
+//         const insertedUser = await users.updateOne(query, updateDocument)
+        
+//         res.send(insertedUser)
+
+//     } catch (err) {
+//         console.log(err)
+//         res.status(500).json({ error: 'Internal Server Error' })
+//     } finally {
+//         await client.close()
+//     }
+// })
+
+
 app.put('/user', async (req, res) => {
     const client = new MongoClient(uri)
     const formData = req.body.formData
-    const userId = req.body.userId // Add this line
 
-    // console.log(formData)
-
-    try { 
+    try {
         await client.connect()
         const database = client.db('tinder-data')
         const users = database.collection('users')
 
-        const query = { user_id: userId }
+        const query = {user_id: formData.user_id}
+
         const updateDocument = {
-            $set:{
+            $set: {
                 first_name: formData.first_name,
                 dob_day: formData.dob_day,
                 dob_month: formData.dob_month,
@@ -147,28 +196,20 @@ app.put('/user', async (req, res) => {
                 show_gender: formData.show_gender,
                 gender_identity: formData.gender_identity,
                 gender_interest: formData.gender_interest,
-                url: req.file ? `/uploads/${req.file.filename}` : formData.url,
+                url: formData.url,
                 about: formData.about,
                 matches: formData.matches
             },
         }
 
         const insertedUser = await users.updateOne(query, updateDocument)
-        
+
         res.send(insertedUser)
 
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({ error: 'Internal Server Error' })
     } finally {
         await client.close()
     }
 })
-
-
-
-
-
 
 
 

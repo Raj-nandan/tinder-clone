@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Nav from '../components/Nav'
 import { useCookies } from 'react-cookie'
 import { useNavigate } from 'react-router-dom'
@@ -26,19 +26,48 @@ const Onboarding = () => {
 
   let navigate = useNavigate()
 
-  const handleSubmit = async(e) => {
-    console.log("submitted");
-    e.preventDefault()
+  // const handleBeforeUnload = (e) => {
+  //   e.preventDefault()
+  //   e.returnValue = ''
+  // }
 
+  // useEffect(() => {
+  //   window.addEventListener('beforeunload', handleBeforeUnload)
+
+  //   return () => {
+  //     window.removeEventListener('beforeunload', handleBeforeUnload)
+  //   }
+  // }, [])
+
+  // const handleSubmit = async(e) => {
+  //   console.log("submitted");
+  //   e.preventDefault()
+
+  //   try {
+  //     const response = await axios.put('http://localhost:8000/user', { formData })
+  //     const success = response.status === 200
+  //     if (success) {
+  //       // Remove the beforeunload event listener before navigating
+  //       window.removeEventListener('beforeunload', handleBeforeUnload)
+  //       navigate('/dashboard')
+  //     }
+  //   } catch (error) {
+  //     console.log(error)
+  //   }
+  // }
+
+  const handleSubmit = async (e) => {
+    console.log('submitted')
+    e.preventDefault()
     try {
       const response = await axios.put('http://localhost:8000/user', { formData })
+      console.log(response)
       const success = response.status === 200
-      if (success) {
-        navigate('/dashboard')
-      }
-    } catch (error) {
-      console.log(error)
+      if (success) navigate('/dashboard')
+    } catch (err) {
+      console.log(err)
     }
+
   }
 
 
@@ -63,7 +92,7 @@ const Onboarding = () => {
       file: null // Clear file when URL is entered
     }))
   }
-  
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -75,7 +104,37 @@ const Onboarding = () => {
     }
   }
 
+  const monthInputRef = useRef(null)
+  const yearInputRef = useRef(null)
+
+  const handleDateChange = (e) => {
+    const { name, value } = e.target
+    let updatedValue = value
+
+    if (name === 'dob_day' && value.length > 2) {
+      updatedValue = value.slice(0, 2)
+      monthInputRef.current.focus()
+    } else if (name === 'dob_month' && value.length > 2) {
+      updatedValue = value.slice(0, 2)
+      yearInputRef.current.focus()
+    } else if (name === 'dob_year' && value.length > 4) {
+      updatedValue = value.slice(0, 4)
+    }
+
+    if (name === 'dob_day' && value.length === 2) {
+      monthInputRef.current.focus()
+    } else if (name === 'dob_month' && value.length === 2) {
+      yearInputRef.current.focus()
+    }
+
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: updatedValue
+    }))
+  }
+
   console.log(formData)
+
 
   return (
     <div>
@@ -106,7 +165,8 @@ const Onboarding = () => {
                 placeholder="DD"
                 required={true}
                 value={formData.dob_day}
-                onChange={handleChange}
+                onChange={handleDateChange}
+                maxLength="2"
               />
               <input
                 id="dob_month"
@@ -115,7 +175,9 @@ const Onboarding = () => {
                 placeholder="MM"
                 required={true}
                 value={formData.dob_month}
-                onChange={handleChange}
+                onChange={handleDateChange}
+                maxLength="2"
+                ref={monthInputRef}
               />
               <input
                 id="dob_year"
@@ -124,7 +186,9 @@ const Onboarding = () => {
                 placeholder="YYYY"
                 required={true}
                 value={formData.dob_year}
-                onChange={handleChange}
+                onChange={handleDateChange}
+                maxLength="4"
+                ref={yearInputRef}
               />
             </div>
 
@@ -214,7 +278,7 @@ const Onboarding = () => {
 
           </section>
 
-        
+
 
           <section>
             <label htmlFor="url">Profile Picture URL</label>
