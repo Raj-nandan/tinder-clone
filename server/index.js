@@ -135,6 +135,35 @@ app.get('/users', async (req, res) => {
 })
 
 
+// ----------get user by id-------------
+
+app.get('/user', async (req, res) => {
+    const client = new MongoClient(uri)
+    const userId = req.query.userId
+
+    try {
+        await client.connect()
+        const database = client.db('tinder-data')
+        const users = database.collection('users')
+
+        const query = { user_id: userId }
+        const user = await users.findOne(query)
+
+        res.send(user)
+    } catch (err) {
+        console.log(err)
+        res.status(500).send('Internal Server Error')
+    } finally {
+        await client.close()
+    }
+})
+
+
+
+
+
+
+
 // ----------update user detail and onboarding-------------
 
 // app.put('/user', async (req, res) => {

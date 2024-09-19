@@ -1,9 +1,48 @@
 import React from 'react'
 import TinderCard from 'react-tinder-card'
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import ChatContainer from '../components/ChatContainer'
+import axios from 'axios'
+import { useCookies } from 'react-cookie'
 
 const Dashboard = () => {
+
+  const [user, setUser] = useState(null)
+  const [cookies, setCookie, removeCookie] = useCookies(['user'])
+
+  const userId = cookies.UserId
+  const isMounted = useRef(false)
+
+  const getUser = useCallback(async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/user', {
+        params: { userId }
+      })
+      setUser(response.data)
+    } catch (error) {
+      console.error('Error fetching user:', error)
+    }
+  }, [userId])
+
+  useEffect(() => {
+    if (!isMounted.current) {
+      getUser()
+      isMounted.current = true
+    }
+  }, [getUser])
+
+  // Use this for debugging, remove in production
+  useEffect(() => {
+    if (user) {
+      console.log('User data:', user)
+    }
+  }, [user])
+
+
+
+
+
+
   const [characters, setCharacters] = useState([
     {
       name: 'Richard Hendricks',
@@ -38,7 +77,7 @@ const Dashboard = () => {
     console.log(name + ' left the screen!')
     setCharacters((prevCharacters) => prevCharacters.filter((character) => character.name !== name))
   }
-  
+
   const swipeLeft = () => {
     if (characters.length > 0) {
       const nameToDelete = characters[characters.length - 1].name
@@ -56,16 +95,20 @@ const Dashboard = () => {
   }
 
   return (
+
+    <>
+    {user  &&
+
     <div className="dashboard">
-      <ChatContainer/>
+      <ChatContainer user={user} />
       <div className="swipe-container">
         <div className="card-container">
           <div className="tinder-card-box">
             {characters.map((character) =>
-              <TinderCard 
-                className='swipe' 
-                key={character.name} 
-                onSwipe={(dir) => swiped(dir, character.name)} 
+              <TinderCard
+                className='swipe'
+                key={character.name}
+                onSwipe={(dir) => swiped(dir, character.name)}
                 onCardLeftScreen={() => outOfFrame(character.name)}
                 preventSwipe={['up', 'down']} // Add this line
               >
@@ -80,11 +123,12 @@ const Dashboard = () => {
             <button className="swipe-button right" onClick={swipeRight}>✅</button>
           </div>
           <div className="swipe-info">
-            {lastDirection ? <p>You swiped {lastDirection}</p> : <p/>}
+            {lastDirection ? <p>You swiped {lastDirection}</p> : <p />}
           </div>
         </div>
       </div>
-    </div>
+    </div>}
+    </>
   )
 }
 

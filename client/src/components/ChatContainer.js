@@ -3,12 +3,12 @@ import ChatHeader from './ChatHeader'
 import ChatDisplay from './ChatDisplay'
 import MatchesDisplay from './MatchesDisplay'
 
-const ChatContainer = () => {
+const ChatContainer = ({ user }) => {
   const [displayOption, setDisplayOption] = useState('matches')
 
   return (
     <div className="chat-container">
-      <ChatHeader />
+      <ChatHeader user={user} />
 
       <div className="option-container">
         <button

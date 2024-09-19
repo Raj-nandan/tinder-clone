@@ -1,18 +1,35 @@
 import React from 'react'
+import { useCookies } from 'react-cookie'
+import defaultImage from '../images/altImage.png'
+import { useNavigate } from 'react-router-dom'
 
-const ChatHeader = () => {
-  return (
-    <div className="chat-header">
-      <div className="profile">
-        <div className="img-container">
-          <img src="https://images1.dnaindia.com/images/DNA-EN/900x1600/2024/2/16/1708066916901_ntgfvc89ff.jpg" alt="profile"/>
+
+
+const ChatHeader = ({ user }) => {
+  const [cookies, setCookie, removeCookie] = useCookies(['user'])
+  const navigate = useNavigate()
+    const logout = () => {
+        removeCookie('UserId', cookies.UserId)
+        removeCookie('AuthToken', cookies.AuthToken)
+        // window.location.reload()
+        navigate('/')
+    }
+
+
+    
+  
+    return (
+      <div className="chat-header">
+        <div className="profile">
+          <div className="img-container">
+            <img src={user.url || defaultImage} alt="profile"/>
+          </div>
+          <h3>{user.first_name}</h3>
         </div>
-        <h3>Username</h3>
+        <i className="log-out-icon" onClick={logout}>⇦</i>
       </div>
-      <i className="log-out-icon">⇦</i>
-    </div>
-  )
-}
-
-export default ChatHeader
+    )
+  }
+  
+  export default ChatHeader
 

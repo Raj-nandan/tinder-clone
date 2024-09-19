@@ -38,6 +38,8 @@ const AuthModal = ({ setShowModel, isSignup }) => {
       if (success && isSignup) navigate('/onboarding')
       if (success && !isSignup) navigate('/dashboard')
 
+      window.location.reload()
+
     } catch (error) {
       if (error.response && error.response.data.error) {
         setError(error.response.data.error)
