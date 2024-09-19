@@ -116,16 +116,18 @@ app.post('/signup', async (req, res) => {
 
 // ----------get all users-------------
 
-app.get('/users', async (req, res) => {
+app.get('/gendered-users', async (req, res) => {
     const client = new MongoClient(uri)
+    const gender = req.query.gender
 
     try {
         await client.connect()
         const database = client.db('tinder-data')
         const users = database.collection('users')
+        const query = { gender_identity: {$eq : 'man'} }
+        const foundUsers = await users.find(query).toArray()
 
-        const returnedUsers = await users.find().toArray()
-        res.send(returnedUsers)
+        res.send(foundUsers)
     } catch (err) {
         console.log(err)
         res.status(500).send('Internal Server Error')
@@ -241,8 +243,63 @@ app.put('/user', async (req, res) => {
 })
 
 
+// ----------add match----------    ---
+
+app.put('/addmatch', async (req, res) => {
+    const client = new MongoClient(uri)
+    const { userId, matchedUserId } = req.body
+
+    try {
+        await client.connect()
+        const database = client.db('tinder-data')
+        const users = database.collection('users')
+
+        const query = { user_id: userId }
+        const updateDocument = {
+            $push: { matches: { user_id: matchedUserId } }
+        }
+
+        const user = await users.updateOne(query, updateDocument)
+
+        res.send(user)
+
+    } finally {
+        await client.close()
+    }
+})
 
 
+// ----------get users----------
+
+app.get('/users', async (req, res) => {
+    const client = new MongoClient(uri)
+    const userIds = JSON.parse(req.query.userIds)
+    console.log("userIds", userIds)
+
+    try {
+        await client.connect()
+        const database = client.db('tinder-data')
+        const users = database.collection('users')
+
+        const pipeline = [
+            {
+                '$match': {
+                    'user_id': { 
+                        '$in': userIds   
+                    }
+                }
+            }
+        ]
+
+        const foundUsers = await users.aggregate(pipeline).toArray()
+        
+        console.log("foundUsers", foundUsers)
+        res.send(foundUsers)
+
+    } finally {
+        await client.close()
+    }
+})
 
 
 

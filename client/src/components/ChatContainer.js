@@ -28,7 +28,7 @@ const ChatContainer = ({ user }) => {
       {/* {displayOption === 'matches' && <MatchesDisplay />}
       {displayOption === 'chats' && <ChatDisplay />} */}
 
-      <MatchesDisplay />
+      <MatchesDisplay matches={user.matches} />
       <ChatDisplay />
     </div>
   )
