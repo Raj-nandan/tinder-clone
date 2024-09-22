@@ -1,6 +1,6 @@
 import React from 'react'
 import TinderCard from 'react-tinder-card'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect} from 'react'
 import ChatContainer from '../components/ChatContainer'
 import axios from 'axios'
 import { useCookies } from 'react-cookie'
@@ -13,18 +13,17 @@ const Dashboard = () => {
   const [genderedUsers, setGenderedUsers] = useState(null)
 
   const userId = cookies.UserId
-  const isMounted = useRef(false)
 
-  const getUser = useCallback(async () => {
+  const getUser = async () => {
     try {
       const response = await axios.get('http://localhost:8000/user', {
         params: { userId }
       })
       setUser(response.data)
     } catch (error) {
-      console.error('Error fetching user:', error)
+      console.log(error)
     }
-  }, [userId])
+  }
 
 
   const getGenderedUsers = async () => {
@@ -34,31 +33,22 @@ const Dashboard = () => {
       })
       setGenderedUsers(response.data)
     } catch (error) {
-      console.error('Error fetching user:', error)
+      console.log(error)
     }
   }
 
 
 
-
-
-
-
   useEffect(() => {
-    if (!isMounted.current) {
-      getUser()
-      getGenderedUsers()
-      isMounted.current = true
-    }
-  }, [getUser])
+    getUser()
 
-  // Use this for debugging, remove in production
+  }, [])
+
   useEffect(() => {
     if (user) {
-      console.log('User data:', user)
-      // console.log('Gendered users:', genderedUsers)
+      getGenderedUsers()
     }
-  }, [user, genderedUsers])
+  }, [user])
 
 
   const updateMatches = async (matchedUserId) => {
@@ -67,17 +57,12 @@ const Dashboard = () => {
         userId,
         matchedUserId
       })
-      // console.log('Matches updated:', response.data)
-      getUser()
-    } catch (error) {
-      console.error('Error updating matches:', error)
+      setUser(response.data) 
+      console.log('Updated user data:', response.data)
+    } catch (err) {
+      console.error('Error updating matches:', err)
     }
   }
-
-  console.log(user)
-
-
-
 
 
   const swiped = (direction, swipedUserId) => {
@@ -90,7 +75,9 @@ const Dashboard = () => {
 
   const outOfFrame = (name) => {
     console.log(name + ' left the screen!')
-    setGenderedUsers((prevCharacters) => prevCharacters.filter((character) => character.first_name !== name))
+    setGenderedUsers((prevUsers) => 
+      prevUsers.filter((user) => user.first_name !== name)
+    )
   }
 
   const swipeLeft = () => {
@@ -111,32 +98,31 @@ const Dashboard = () => {
   }
 
   const matchedUserIds = user?.matches?.map(({ user_id }) => user_id).concat(userId) || []
+  console.log(matchedUserIds)
 
   const filteredGenderedUsers = genderedUsers?.filter(
     genderedUser => !matchedUserIds.includes(genderedUser.user_id)
-  )
+  ) || []
 
 
   return (
-
     <>
       {user &&
-
         <div className="dashboard">
           <ChatContainer user={user} />
           <div className="swipe-container">
             <div className="card-container">
               <div className="tinder-card-box">
-                {filteredGenderedUsers?.map((genderedUsers) =>
+                {filteredGenderedUsers.map((genderedUser) =>
                   <TinderCard
                     className='swipe'
-                    key={genderedUsers.first_name}
-                    onSwipe={(dir) => swiped(dir, genderedUsers.user_id)}
-                    onCardLeftScreen={() => outOfFrame(genderedUsers.first_name)}
-                    preventSwipe={['up', 'down']} // Add this line
+                    key={genderedUser.first_name}
+                    onSwipe={(dir) => swiped(dir, genderedUser.user_id)}
+                    onCardLeftScreen={() => outOfFrame(genderedUser.first_name)}
+                    preventSwipe={['up', 'down']}
                   >
-                    <div style={{ backgroundImage: 'url(' + genderedUsers.url + ')' }} className='card'>
-                      <h3>{genderedUsers.first_name}</h3>
+                    <div style={{ backgroundImage: 'url(' + genderedUser.url + ')' }} className='card'>
+                      <h3>{genderedUser.first_name}</h3>
                     </div>
                   </TinderCard>
                 )}

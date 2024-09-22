@@ -168,44 +168,6 @@ app.get('/user', async (req, res) => {
 
 // ----------update user detail and onboarding-------------
 
-// app.put('/user', async (req, res) => {
-//     const client = new MongoClient(uri)
-//     const formData = req.body.formData
-//     const userId = req.body.userId
-
-//     try { 
-//         await client.connect()
-//         const database = client.db('tinder-data')
-//         const users = database.collection('users')
-
-//         const query = { user_id: userId }
-//         const updateDocument = {
-//             $set:{
-//                 first_name: formData.first_name,
-//                 dob_day: formData.dob_day,
-//                 dob_month: formData.dob_month,
-//                 dob_year: formData.dob_year,
-//                 show_gender: formData.show_gender,
-//                 gender_identity: formData.gender_identity,
-//                 gender_interest: formData.gender_interest,
-//                 url: req.file ? `/uploads/${req.file.filename}` : formData.url,
-//                 about: formData.about,
-//                 matches: formData.matches
-//             },
-//         }
-
-//         const insertedUser = await users.updateOne(query, updateDocument)
-        
-//         res.send(insertedUser)
-
-//     } catch (err) {
-//         console.log(err)
-//         res.status(500).json({ error: 'Internal Server Error' })
-//     } finally {
-//         await client.close()
-//     }
-// })
-
 
 app.put('/user', async (req, res) => {
     const client = new MongoClient(uri)
@@ -254,15 +216,26 @@ app.put('/addmatch', async (req, res) => {
         const database = client.db('tinder-data')
         const users = database.collection('users')
 
-        const query = { user_id: userId }
-        const updateDocument = {
-            $push: { matches: { user_id: matchedUserId } }
-        }
+        // Update current user's matches
+        await users.updateOne(
+            { user_id: userId },
+            { $addToSet: { matches: { user_id: matchedUserId } } }
+        )
 
-        const user = await users.updateOne(query, updateDocument)
+        // Update matched user's matches
+        await users.updateOne(
+            { user_id: matchedUserId },
+            { $addToSet: { matches: { user_id: userId } } }
+        )
 
-        res.send(user)
+        // Fetch updated user data
+        const updatedUser = await users.findOne({ user_id: userId })
 
+        res.json(updatedUser)
+
+    } catch (error) {
+        console.error('Error adding match:', error)
+        res.status(500).json({ error: 'Internal server error' })
     } finally {
         await client.close()
     }
@@ -273,28 +246,29 @@ app.put('/addmatch', async (req, res) => {
 
 app.get('/users', async (req, res) => {
     const client = new MongoClient(uri)
-    const userIds = JSON.parse(req.query.userIds)
-    console.log("userIds", userIds)
+    const userIds = req.query.userIds ? JSON.parse(req.query.userIds) : []
+    console.log(userIds)
 
     try {
         await client.connect()
         const database = client.db('tinder-data')
         const users = database.collection('users')
 
-        const pipeline = [
-            {
-                '$match': {
-                    'user_id': { 
-                        '$in': userIds   
+        const pipeline =
+            [
+                {
+                    '$match': {
+                        'user_id': {
+                            '$in': userIds
+                        }
                     }
                 }
-            }
-        ]
+            ]
 
         const foundUsers = await users.aggregate(pipeline).toArray()
-        
-        console.log("foundUsers", foundUsers)
+
         res.send(foundUsers)
+        // console.log("foundUsers", foundUsers)
 
     } finally {
         await client.close()
